@@ -93,6 +93,9 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- Codeium
+-- vim.g.codeium_no_map_tab = true
+
 vim.cmd 'language en_US'
 
 -- [[ Setting options ]]
@@ -106,6 +109,11 @@ require 'lazy-bootstrap'
 
 -- [[ Configure and install plugins ]]
 require 'lazy-plugins'
+
+-- [[ Snippets ]]
+-- require('luasnip.loaders.from_vscode').lazy_load {
+--   paths = { '~/.config/nvim/snippets' },
+-- }
 
 -- [[ Basic Keymaps ]]
 require 'keymaps'

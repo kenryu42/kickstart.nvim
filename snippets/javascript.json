@@ -1,0 +1,11 @@
+{
+  "immediately invoque async": {
+    "prefix": "iif",
+    "body": [
+      "(async () => {",
+      "  $1",
+      "})();"
+    ],
+    "description": "Immediately invoque async arrow function"
+  }
+}

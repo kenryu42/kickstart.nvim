@@ -15,10 +15,15 @@ return {
   },
   opts = {
     filesystem = {
+      -- use_libuv_file_watcher = true,
       window = {
         mappings = {
           ['\\'] = 'close_window',
         },
+      },
+      filtered_items = {
+        hide_dotfiles = false,
+        hide_gitignored = false,
       },
     },
   },

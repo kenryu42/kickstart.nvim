@@ -3,6 +3,7 @@
 --  For more options, you can see `:help option-list`
 local opt = vim.opt
 
+opt.autoread = true
 -- Make line numbers default
 opt.number = true
 -- You can also add relative line numbers, to help with jumping.
@@ -59,5 +60,12 @@ opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 opt.scrolloff = 10
 
+-- Avante Recommended Options
+opt.laststatus = 3
+
 -- Virtual Block Edit
 opt.virtualedit = 'block'
+
+opt.tabstop = 4
+opt.shiftwidth = 4
+opt.expandtab = true

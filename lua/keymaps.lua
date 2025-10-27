@@ -7,7 +7,11 @@ vim.opt.hlsearch = true
 set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Personal preference
-vim.api.nvim_set_keymap('i', 'jk', '<ESC>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('i', 'jk', '<ESC>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<C-l>', '<Right>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<C-h>', '<Left>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<C-j>', '<Down>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<C-k>', '<Up>', { noremap = true, silent = true })
 
 -- Diagnostic keymaps
 set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })

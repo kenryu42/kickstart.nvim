@@ -154,6 +154,53 @@ return { -- LSP Configuration & Plugins
     --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
     --  - settings (table): Override the default settings passed when initializing the server.
     --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+    local lspconfig = require 'lspconfig'
+    lspconfig.sourcekit.setup {
+      filetypes = { 'swift', 'objective-c', 'objective-cpp' },
+      cmd = { 'sourcekit-lsp' },
+      root_dir = function(filename, _)
+        return require('lspconfig.util').root_pattern('Package.swift', '.git')(filename)
+      end,
+    }
+
+    -- local nvim_lsp = require 'lspconfig'
+    local is_node_dir = function()
+      return lspconfig.util.root_pattern 'package.json'(vim.fn.getcwd())
+    end
+
+    -- -- ts_ls
+    -- local ts_opts = {}
+    -- ts_opts.on_attach = function(client)
+    --   if not is_node_dir() then
+    --     client.stop(true)
+    --   end
+    -- end
+    -- nvim_lsp.ts_ls.setup(ts_opts)
+
+    -- denols
+    local deno_opts = {
+      root_dir = lspconfig.util.root_pattern('deno.json', 'deno.jsonc'),
+      init_options = {
+        lint = true,
+        unstable = true,
+        suggest = {
+          imports = {
+            hosts = {
+              ['https://deno.land'] = true,
+              ['https://cdn.npmjs.com'] = true,
+              ['https://registry.npmjs.org'] = true,
+            },
+          },
+        },
+      },
+    }
+    deno_opts.on_attach = function(client)
+      if is_node_dir() then
+        client.stop(true)
+      end
+    end
+    lspconfig.denols.setup(deno_opts)
+
     local servers = {
       -- clangd = {},
       -- gopls = {},
@@ -167,7 +214,6 @@ return { -- LSP Configuration & Plugins
       -- But for many setups, the LSP (`tsserver`) will work just fine
       -- tsserver = {},
       --
-
       lua_ls = {
         -- cmd = {...},
         -- filetypes = { ...},

@@ -154,18 +154,26 @@ return { -- LSP Configuration & Plugins
     --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
     --  - settings (table): Override the default settings passed when initializing the server.
     --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-    local lspconfig = require 'lspconfig'
-    lspconfig.sourcekit.setup {
+    -- Helper function to replace lspconfig.util.root_pattern
+    local function root_pattern(...)
+      local patterns = { ... }
+      return function(fname)
+        return vim.fs.root(0, patterns)
+      end
+    end
+
+    -- Configure sourcekit LSP using vim.lsp.config
+    vim.lsp.config.sourcekit = {
       filetypes = { 'swift', 'objective-c', 'objective-cpp' },
       cmd = { 'sourcekit-lsp' },
       root_dir = function(filename, _)
-        return require('lspconfig.util').root_pattern('Package.swift', '.git')(filename)
+        return vim.fs.root(0, { 'Package.swift', '.git' })
       end,
     }
 
-    -- local nvim_lsp = require 'lspconfig'
+    -- Helper to check if current directory is a Node.js project
     local is_node_dir = function()
-      return lspconfig.util.root_pattern 'package.json'(vim.fn.getcwd())
+      return root_pattern('package.json')(vim.fn.getcwd()) ~= nil
     end
 
     -- -- ts_ls
@@ -177,9 +185,13 @@ return { -- LSP Configuration & Plugins
     -- end
     -- nvim_lsp.ts_ls.setup(ts_opts)
 
-    -- denols
-    local deno_opts = {
-      root_dir = lspconfig.util.root_pattern('deno.json', 'deno.jsonc'),
+    -- Configure denols LSP using vim.lsp.config
+    vim.lsp.config.denols = {
+      cmd = { 'deno', 'lsp' },
+      filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx' },
+      root_dir = function(fname)
+        return vim.fs.root(0, { 'deno.json', 'deno.jsonc' })
+      end,
       init_options = {
         lint = true,
         unstable = true,
@@ -194,12 +206,17 @@ return { -- LSP Configuration & Plugins
         },
       },
     }
-    deno_opts.on_attach = function(client)
-      if is_node_dir() then
-        client.stop(true)
-      end
-    end
-    lspconfig.denols.setup(deno_opts)
+
+    -- Stop denols if in a Node.js project directory
+    vim.api.nvim_create_autocmd('LspAttach', {
+      group = vim.api.nvim_create_augroup('denols-node-check', { clear = true }),
+      callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client and client.name == 'denols' and is_node_dir() then
+          vim.lsp.stop_client(client.id, true)
+        end
+      end,
+    })
 
     local servers = {
       -- clangd = {},
@@ -254,7 +271,8 @@ return { -- LSP Configuration & Plugins
           -- by the server configuration above. Useful when disabling
           -- certain features of an LSP (for example, turning off formatting for tsserver)
           server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          require('lspconfig')[server_name].setup(server)
+          -- Use vim.lsp.config instead of lspconfig.setup
+          vim.lsp.config[server_name] = server
         end,
       },
     }

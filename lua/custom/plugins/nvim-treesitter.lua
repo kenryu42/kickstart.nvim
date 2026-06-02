@@ -4,7 +4,7 @@ return { -- Highlight, edit, and navigate code
   build = ':TSUpdate',
   opts = {
     install_dir = vim.fn.stdpath 'data' .. '/lazy/nvim-treesitter',
-    ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'vim', 'vimdoc', 'jsdoc', 'gitcommit' },
+    ensure_installed = { 'bash', 'c', 'css', 'diff', 'dockerfile', 'go', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'query', 'regex', 'rust', 'toml', 'tsx', 'typescript', 'vim', 'vimdoc', 'yaml', 'jsdoc', 'gitcommit' },
     indent = { enable = true, disable = { 'ruby' } },
   },
   config = function(_, opts)

@@ -57,16 +57,6 @@ vim.api.nvim_create_autocmd('BufReadPost', {
   end,
 })
 
-vim.api.nvim_create_autocmd('VimEnter', {
-  desc = 'Auto-open Neo-tree on startup',
-  group = vim.api.nvim_create_augroup('kickstart-neotree-startup', { clear = true }),
-  nested = true,
-  once = true,
-  callback = function()
-    vim.cmd('Neotree focus')
-  end,
-})
-
 -- vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, {
 --   pattern = '*',
 --   command = 'checktime',

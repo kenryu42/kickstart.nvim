@@ -23,12 +23,22 @@ return { -- Autoformat
         lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
       }
     end,
+    formatters = {
+      -- Custom prettierd variant that forces the jsonc parser for jsonc files,
+      -- since prettierd can't infer the correct parser from the .jsonc extension.
+      prettierd_jsonc = {
+        inherit = "prettierd",
+        prepend_args = { '--parser=jsonc' },
+      },
+    },
     formatters_by_ft = {
       lua = { 'stylua' },
       -- Conform can also run multiple formatters sequentially
       python = { 'isort', 'black' },
       -- Run the first available JavaScript formatter.
       javascript = { 'prettierd', 'prettier', stop_after_first = true },
+      json = { 'prettierd', 'prettier', stop_after_first = true },
+      jsonc = { 'prettierd_jsonc' },
       swift = { 'swiftformat' },
     },
   },

@@ -96,7 +96,7 @@ vim.g.have_nerd_font = true
 -- Codeium
 -- vim.g.codeium_no_map_tab = true
 
-vim.cmd 'language en_US'
+vim.cmd 'language en_US.UTF-8'
 
 -- [[ Setting options ]]
 require 'options'

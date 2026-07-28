@@ -164,10 +164,10 @@ return { -- LSP Configuration & Plugins
 
     -- Configure sourcekit LSP using vim.lsp.config
     vim.lsp.config.sourcekit = {
-      filetypes = { 'swift', 'objective-c', 'objective-cpp' },
+      filetypes = { 'swift', 'objc', 'objcpp' },
       cmd = { 'sourcekit-lsp' },
-      root_dir = function(filename, _)
-        return vim.fs.root(0, { 'Package.swift', '.git' })
+      root_dir = function(bufnr, on_dir)
+        on_dir(vim.fs.root(bufnr, { 'Package.swift', 'buildServer.json', '.git' }) or vim.fn.getcwd())
       end,
     }
 
@@ -188,9 +188,14 @@ return { -- LSP Configuration & Plugins
     -- Configure denols LSP using vim.lsp.config
     vim.lsp.config.denols = {
       cmd = { 'deno', 'lsp' },
-      filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx' },
-      root_dir = function(fname)
-        return vim.fs.root(0, { 'deno.json', 'deno.jsonc' })
+      filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+      -- Only start denols when a Deno project root is found; not calling
+      -- `on_dir` leaves the server unstarted, keeping it out of Node projects.
+      root_dir = function(bufnr, on_dir)
+        local root = vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc' })
+        if root then
+          on_dir(root)
+        end
       end,
       init_options = {
         lint = true,
@@ -206,6 +211,18 @@ return { -- LSP Configuration & Plugins
         },
       },
     }
+
+    -- vtsls is installed by mason and enabled automatically; it only needs a
+    -- root resolver that yields to denols inside Deno projects.
+    vim.lsp.config('vtsls', {
+      root_dir = function(bufnr, on_dir)
+        if vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc' }) then
+          return
+        end
+        local root = vim.fs.root(bufnr, { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' })
+        on_dir(root or vim.fs.dirname(vim.api.nvim_buf_get_name(bufnr)))
+      end,
+    })
 
     -- Stop denols if in a Node.js project directory
     vim.api.nvim_create_autocmd('LspAttach', {
@@ -261,21 +278,29 @@ return { -- LSP Configuration & Plugins
     vim.list_extend(ensure_installed, {
       'stylua', -- Used to format Lua code
       'tree-sitter-cli', -- Required by nvim-treesitter main branch
+      'vtsls', -- TypeScript/JavaScript LSP (bundles its own tsserver)
+      'black', -- Python formatter (conform)
+      'isort', -- Python import sorter (conform)
+      'prettier', -- Fallback for prettierd (conform)
     })
     require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+    -- Broadcast the nvim-cmp capabilities to every server.
+    vim.lsp.config('*', { capabilities = capabilities })
+
+    -- Merge the per-server overrides above onto nvim-lspconfig's defaults.
+    for server_name, server in pairs(servers) do
+      vim.lsp.config(server_name, server)
+    end
+
+    -- `automatic_enable` turns on every mason-installed package that maps to an
+    -- lspconfig entry; stylua is a formatter and is already handled by conform.
     require('mason-lspconfig').setup {
-      handlers = {
-        function(server_name)
-          local server = servers[server_name] or {}
-          -- This handles overriding only values explicitly passed
-          -- by the server configuration above. Useful when disabling
-          -- certain features of an LSP (for example, turning off formatting for tsserver)
-          server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          -- Use vim.lsp.config instead of lspconfig.setup
-          vim.lsp.config[server_name] = server
-        end,
-      },
+      automatic_enable = { exclude = { 'stylua' } },
     }
+
+    -- Servers configured by hand above are not installed via mason, so
+    -- `automatic_enable` never sees them and they must be enabled explicitly.
+    vim.lsp.enable { 'sourcekit', 'denols' }
   end,
 }

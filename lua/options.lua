@@ -60,9 +60,6 @@ opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 opt.scrolloff = 10
 
--- Avante Recommended Options
-opt.laststatus = 3
-
 -- Virtual Block Edit
 opt.virtualedit = 'block'
 
